@@ -55,6 +55,9 @@ function buildNetwork(A, names){
      stabilization: {
       enabled: true}}
   );
+  network.on("stabilizationIterationsDone", function () {
+    network.setOptions( { physics: false } );
+ });
 }
 
 </script>
