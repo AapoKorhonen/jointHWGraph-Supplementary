@@ -26,7 +26,7 @@ html, body {
 }
 
 #sidebar h3 {
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 #geneList button {
@@ -49,13 +49,7 @@ html, body {
   <input id="searchBox" placeholder="Search gene">
   <button onclick="searchNode()">Search</button>
 
-  <h3>Sort genes by:</h3>
-  <select id="sortSelect" onchange="updateGeneList()">
-    <option value="alphabet">Alphabetical</option>
-    <option value="degree">Degree</option>
-  </select>
-
-  <h3>All genes</h3>
+  <h3>All genes (number of connections)</h3>
   <div id="geneList"></div>
 </div>
 
@@ -63,10 +57,10 @@ html, body {
 
 <script>
 
-// Globaalit
+// Globaalit muuttujat
 let network;
 let nodeNames = [];
-let edgesData; // edge DataSet
+let edgesData; // edgejen DataSet
 
 fetch("matrix.txt")
   .then(r => r.text())
@@ -82,12 +76,14 @@ fetch("matrix.txt")
     );
 
     buildNetwork(A, names);
-    buildGeneList(); // rakenna lista aluksi
+    buildGeneList(names);
+
   });
+
 
 function buildNetwork(A, names){
 
-  nodeNames = names;
+  nodeNames = names;  // hakua varten
 
   let nodes = [];
   let edges = [];
@@ -106,7 +102,7 @@ function buildNetwork(A, names){
 
   const container = document.getElementById("network");
 
-  edgesData = new vis.DataSet(edges);
+  edgesData = new vis.DataSet(edges); // tallennetaan global edgeille
 
   const data = {
     nodes: new vis.DataSet(nodes),
@@ -129,7 +125,9 @@ function buildNetwork(A, names){
 
   network = new vis.Network(container, data, options);
 
+
   });
+
 }
 
 // Hakufunktio
@@ -150,30 +148,21 @@ function searchNode(){
   network.focus(id, { scale: 1.5, animation: true });
 }
 
-// Luo gene-lista oikeaan reunaan
-function buildGeneList(){
+// Luo gene-listan oikeaan reunaan
+function buildGeneList(names){
   const container = document.getElementById("geneList");
-  container.innerHTML = ""; // tyhjennä vanhat napit
 
-  let sortedNames = [...nodeNames];
-
-  const sortBy = document.getElementById("sortSelect").value;
-  if(sortBy === "alphabet"){
-    sortedNames.sort();
-  } else if(sortBy === "degree" && network){
-    sortedNames.sort((a,b)=>{
-      const degA = network.getConnectedEdges(nodeNames.indexOf(a)).length;
-      const degB = network.getConnectedEdges(nodeNames.indexOf(b)).length;
-      return degB - degA; // suurin degree ensin
-    });
-  }
+  // aakkosjärjestys
+  const sortedNames = [...names].sort();
 
   sortedNames.forEach(name => {
-    const idx = nodeNames.indexOf(name);
+    const idx = nodeNames.indexOf(name); // id networkiin
+
+    // laske degree
     const degree = network ? network.getConnectedEdges(idx).length : 0;
 
     const btn = document.createElement("button");
-    btn.textContent = `${name} (${degree})`;
+    btn.textContent = `${name} (${degree})`; // näytä degree
     btn.onclick = () => {
       network.selectNodes([idx]);
       network.focus(idx, { scale: 1.5, animation: true });
@@ -181,8 +170,4 @@ function buildGeneList(){
     container.appendChild(btn);
   });
 }
-
-// Päivitä lista kun sort-valinta muuttuu
-function updateGeneList(){
-  buildGeneList();
-}
+</script>
