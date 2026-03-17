@@ -51,10 +51,19 @@ function buildNetwork(A, names){
   new vis.Network(
     document.getElementById("network"),
     data,
-    {physics:true,
+    { physics: {
+    solver: "barnesHut",
+
+    barnesHut: {
+      gravitationalConstant: -2000,
+      springLength: 150,
+      springConstant: 0.005,   
+      damping: 0.2            
+    },
      stabilization: {
-      enabled: false,
-     iterations: 100}}
+      enabled: true,
+     iterations: 100}
+    }
   );
 }
 
