@@ -51,7 +51,9 @@ function buildNetwork(A, names){
   new vis.Network(
     document.getElementById("network"),
     data,
-    {physics:true}
+    {physics:true,
+     stabilization: {
+      enabled: true}}
   );
 }
 
