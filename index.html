@@ -10,10 +10,8 @@ fetch("matrix.txt")
 
     const lines = text.trim().split("\n");
 
-    // first row = names
     const names = lines[0].trim().split(/[ ,]+/);
 
-    // rest = matrix
     const A = lines.slice(1).map(line =>
       line.trim().split(/[ ,]+/).map(Number)
     );
@@ -43,28 +41,41 @@ function buildNetwork(A, names){
     }
   }
 
+  const container = document.getElementById("network");
+
   const data = {
     nodes: new vis.DataSet(nodes),
     edges: new vis.DataSet(edges)
   };
 
-  new vis.Network(
-    document.getElementById("network"),
-    data,
-    { physics: {
-    solver: "barnesHut",
+  const options = {
 
-    barnesHut: {
-      gravitationalConstant: -2000,
-      springLength: 150,
-      springConstant: 0.005,   
-      damping: 0.2            
-    },
-     stabilization: {
+    physics: {
       enabled: true,
-     iterations: 100}
+      solver: "barnesHut",
+
+      barnesHut: {
+        gravitationalConstant: -2000,
+        springLength: 150,
+        springConstant: 0.005,
+        damping: 0.3
+      },
+
+      stabilization: {
+        enabled: true,
+        iterations: 200
+      }
     }
-  );
+
+  };
+
+  const network = new vis.Network(container, data, options);
+
+  // 🔴 tärkeä — pysäytä liike kun valmis
+  network.once("stabilizationIterationsDone", function () {
+    network.setOptions({ physics: false });
+  });
+
 }
 
 </script>
