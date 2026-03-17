@@ -1,8 +1,16 @@
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
+<!-- 1. Hakukenttä ja nappi -->
+<input id="searchBox" placeholder="Search node">
+<button onclick="searchNode()">Search</button>
+
 <div id="network" style="width:1920px;height:1080px;"></div>
 
 <script>
+
+// 2. Globaalit muuttujat hakua varten
+let network;
+let nodeNames = [];
 
 fetch("matrix.txt")
   .then(r => r.text())
@@ -22,6 +30,8 @@ fetch("matrix.txt")
 
 
 function buildNetwork(A, names){
+
+  nodeNames = names;  // tallenna globaalisti hakua varten
 
   let nodes = [];
   let edges = [];
@@ -69,9 +79,35 @@ function buildNetwork(A, names){
 
   };
 
-  const network = new vis.Network(container, data, options);
-
+  network = new vis.Network(container, data, options);
 
 }
 
+// 3. Hakufunktio
+function searchNode(){
+
+  const text = document.getElementById("searchBox").value.toLowerCase();
+
+  let id = -1;
+
+  for(let i=0;i<nodeNames.length;i++){
+    if(nodeNames[i].toLowerCase() === text){
+      id = i;
+      break;
+    }
+  }
+
+  if(id === -1){
+    alert("Node not found");
+    return;
+  }
+
+  // Valitse ja zoomaa node
+  network.selectNodes([id]);
+  network.focus(id, {
+    scale: 1.5,
+    animation: true
+  });
+
+}
 </script>
