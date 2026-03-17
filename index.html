@@ -2,59 +2,62 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-  <style>
-    #network {
-      width: 800px;
-      height: 600px;
-      border: 1px solid lightgray;
-    }
-  </style>
-</head>
-<body>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
-<div id="network"></div>
+<div id="network" style="width:800px;height:600px;"></div>
 
 <script>
 
-// adjacency matrix
-const A = [
-  [0,1,0,1],
-  [1,0,1,0],
-  [0,1,0,1],
-  [1,0,1,0]
-];
+fetch("matrix.txt")
+  .then(r => r.text())
+  .then(text => {
 
-// nodes
-let nodes = [];
-for (let i=0;i<A.length;i++){
-  nodes.push({id:i, label:""+i});
-}
+    const lines = text.trim().split("\n");
 
-// edges
-let edges = [];
-for (let i=0;i<A.length;i++){
-  for (let j=0;j<A.length;j++){
-    if (A[i][j] === 1){
-      edges.push({from:i, to:j});
+    // first row = names
+    const names = lines[0].trim().split(/[ ,]+/);
+
+    // rest = matrix
+    const A = lines.slice(1).map(line =>
+      line.trim().split(/[ ,]+/).map(Number)
+    );
+
+    buildNetwork(A, names);
+
+  });
+
+
+function buildNetwork(A, names){
+
+  let nodes = [];
+  let edges = [];
+
+  for(let i=0;i<names.length;i++){
+    nodes.push({
+      id:i,
+      label:names[i]
+    });
+  }
+
+  for(let i=0;i<A.length;i++){
+    for(let j=0;j<A[i].length;j++){
+      if(A[i][j] === 1){
+        edges.push({from:i, to:j});
+      }
     }
   }
+
+  const data = {
+    nodes: new vis.DataSet(nodes),
+    edges: new vis.DataSet(edges)
+  };
+
+  new vis.Network(
+    document.getElementById("network"),
+    data,
+    {physics:true}
+  );
 }
 
-const container = document.getElementById("network");
-
-const data = {
-  nodes: new vis.DataSet(nodes),
-  edges: new vis.DataSet(edges)
-};
-
-const options = {
-  physics: true
-};
-
-new vis.Network(container, data, options);
-
 </script>
-
-</body>
 </html>
