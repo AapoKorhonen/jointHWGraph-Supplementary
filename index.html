@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    #network {
+      width: 800px;
+      height: 600px;
+      border: 1px solid lightgray;
+    }
+  </style>
+</head>
+<body>
+
+<div id="network"></div>
+
+<script>
+
+// adjacency matrix
+const A = [
+  [0,1,0,1],
+  [1,0,1,0],
+  [0,1,0,1],
+  [1,0,1,0]
+];
+
+// nodes
+let nodes = [];
+for (let i=0;i<A.length;i++){
+  nodes.push({id:i, label:""+i});
+}
+
+// edges
+let edges = [];
+for (let i=0;i<A.length;i++){
+  for (let j=0;j<A.length;j++){
+    if (A[i][j] === 1){
+      edges.push({from:i, to:j});
+    }
+  }
+}
+
+const container = document.getElementById("network");
+
+const data = {
+  nodes: new vis.DataSet(nodes),
+  edges: new vis.DataSet(edges)
+};
+
+const options = {
+  physics: true
+};
+
+new vis.Network(container, data, options);
+
+</script>
+
+</body>
+</html>
