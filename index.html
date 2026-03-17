@@ -1,14 +1,68 @@
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 
-<!-- 1. Hakukenttä ja nappi -->
-<input id="searchBox" placeholder="Search node">
-<button onclick="searchNode()">Search</button>
+<style>
+/* koko sivu */
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
 
-<div id="network" style="width:1920px;height:1080px;"></div>
+/* vasen = verkko */
+#network {
+  flex: 1;
+  height: 100%;
+  border-right: 1px solid #ccc;
+}
+
+/* oikea = paneeli */
+#sidebar {
+  width: 300px;
+  height: 100%;
+  overflow-y: auto;
+  padding: 10px;
+  box-sizing: border-box;
+  border-left: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+
+#sidebar h3 {
+  margin-top: 0;
+}
+
+#geneList button {
+  display: block;
+  width: 100%;
+  margin: 2px 0;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+#geneList button:hover {
+  background-color: #ddd;
+}
+</style>
+
+<!-- Oikean reunan paneeli -->
+<div id="sidebar">
+  <input id="searchBox" placeholder="Search gene">
+  <button onclick="searchNode()">Search</button>
+
+  <h3>All genes</h3>
+  <div id="geneList"></div>
+</div>
+
+<!-- Verkko vasemmalla -->
+<div id="network"></div>
 
 <script>
 
-// 2. Globaalit muuttujat hakua varten
+// Globaalit muuttujat
 let network;
 let nodeNames = [];
 
@@ -18,29 +72,28 @@ fetch("matrix.txt")
 
     const lines = text.trim().split("\n");
 
-    const names = lines[0].trim().split(/[ ,]+/);
+    // Poistetaan lainausmerkit ja splitataan
+    let names = lines[0].trim().split(/[ ,]+/).map(n => n.replace(/"/g,''));
 
     const A = lines.slice(1).map(line =>
       line.trim().split(/[ ,]+/).map(Number)
     );
 
     buildNetwork(A, names);
+    buildGeneList(names);
 
   });
 
 
 function buildNetwork(A, names){
 
-  nodeNames = names;  // tallenna globaalisti hakua varten
+  nodeNames = names;  // hakua varten
 
   let nodes = [];
   let edges = [];
 
   for(let i=0;i<names.length;i++){
-    nodes.push({
-      id:i,
-      label:names[i]
-    });
+    nodes.push({ id:i, label:names[i] });
   }
 
   for(let i=0;i<A.length;i++){
@@ -59,55 +112,59 @@ function buildNetwork(A, names){
   };
 
   const options = {
-
     physics: {
       enabled: true,
       solver: "barnesHut",
-
       barnesHut: {
         gravitationalConstant: -2000,
         springLength: 50,
         springConstant: 0.005,
         damping: 0.3
       },
-
-      stabilization: {
-        enabled: true,
-        iterations: 200
-      }
+      stabilization: { enabled: true, iterations: 200 }
     }
-
   };
 
   network = new vis.Network(container, data, options);
 
+
 }
 
-// 3. Hakufunktio
+// Hakufunktio
 function searchNode(){
-
   const text = document.getElementById("searchBox").value.toLowerCase();
-
   let id = -1;
-
   for(let i=0;i<nodeNames.length;i++){
     if(nodeNames[i].toLowerCase() === text){
       id = i;
       break;
     }
   }
-
   if(id === -1){
-    alert("Node not found");
+    alert("Gene not found");
     return;
   }
-
-  // Valitse ja zoomaa node
   network.selectNodes([id]);
-  network.focus(id, {
-    scale: 1.5,
-    animation: true
-  });
-
+  network.focus(id, { scale: 1.5, animation: true });
 }
+
+// Luo gene-listan oikeaan reunaan
+function buildGeneList(names){
+  const container = document.getElementById("geneList");
+
+  // aakkosjärjestys
+  const sortedNames = [...names].sort();
+
+  sortedNames.forEach(name => {
+    const idx = nodeNames.indexOf(name); // id networkiin
+    const btn = document.createElement("button");
+    btn.textContent = name;
+    btn.onclick = () => {
+      network.selectNodes([idx]);
+      network.focus(idx, { scale: 1.5, animation: true });
+    };
+    container.appendChild(btn);
+  });
+}
+
 </script>
